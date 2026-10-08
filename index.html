@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Google Review Link & QR Generator</title>
+<style>
+:root{--bg:#f3f6fb;--card:#fff;--ink:#14213d;--mute:#5b677d;--line:#dbe2ee;--brand:#1a56db;--brand-ink:#fff;--star:#f4b400;--ok:#0f8a4f;--err:#c0292b}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1524;--card:#18223a;--ink:#eef2fb;--mute:#9aa7c0;--line:#2b3858;--brand:#6c9bff;--brand-ink:#0e1524;--ok:#3ccf8a;--err:#ff7b7d}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 "Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:clamp(1.6rem,4vw,2.3rem);line-height:1.15;margin:8px 0 6px;letter-spacing:-.02em}
+h2{font-size:1.1rem;margin:0 0 6px}
+.sub{color:var(--mute);margin:0 0 22px;max-width:62ch}
+.stars{color:var(--star);letter-spacing:3px;font-size:1.1rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.wide{grid-column:1/-1}
+label{display:block;font-weight:600;font-size:.9rem;margin:12px 0 5px}
+input{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:9px;background:transparent;color:var(--ink);font:inherit}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:3px solid var(--brand);outline-offset:2px}
+.hint{font-size:.85rem;color:var(--mute);margin-top:5px}
+.msg{font-size:.85rem;margin-top:6px;min-height:1.2em}.msg.ok{color:var(--ok)}.msg.err{color:var(--err)}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+button,.btn{padding:10px 14px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--ink);font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+button.primary{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+button:hover,.btn:hover{border-color:var(--brand)}
+.out{word-break:break-all;background:var(--bg);border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:.85rem;font-family:ui-monospace,Menlo,Consolas,monospace}
+.qrbox{display:flex;justify-content:center;padding:14px;background:#fff;border-radius:12px;border:1px solid var(--line)}
+.qrbox canvas{width:100%;max-width:280px;height:auto;image-rendering:pixelated}
+.empty{color:var(--mute);text-align:center;padding:40px 10px}
+ol.steps{margin:10px 0 0;padding-left:20px;font-size:.9rem;color:var(--mute)}
+.saved{list-style:none;margin:0;padding:0}
+.saved li{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 0;border-top:1px solid var(--line)}
+.saved li:first-child{border-top:0}
+.saved .n{font-weight:600}.saved .i{font-size:.78rem;color:var(--mute);word-break:break-all}
+.saved .act{display:flex;gap:6px;flex-shrink:0}
+.saved button{padding:6px 10px;font-size:.85rem}
+#presenter{position:fixed;inset:0;z-index:50;background:var(--bg);display:none;overflow:auto;padding:24px 20px}
+#presenter.on{display:block}
+.pcard{max-width:520px;margin:0 auto;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:32px 24px}
+.pcard h2{font-size:clamp(1.5rem,6vw,2.1rem);margin:8px 0 4px;line-height:1.15}
+.pcard p{margin:0 0 16px;color:var(--mute)}
+.pcard .qrbox{border:0;padding:0}
+.pcard .qrbox canvas{max-width:340px}
+.pid{margin-top:18px;font-size:.78rem;color:var(--mute);word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace}
+.ptools{max-width:520px;margin:14px auto 0;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media print{body>.wrap{display:none}.ptools{display:none}#presenter{position:static;display:block;padding:0}.pcard{border:0}:root{--bg:#fff;--card:#fff;--ink:#000;--mute:#333}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="stars" aria-hidden="true">★★★★★</div>
+  <h1>Google review link & QR generator</h1>
+  <p class="sub">Paste a business’s Google Place ID to get a direct review link and a QR code. Use the presenter to show or print it for customers.</p>
+
+  <div class="grid">
+    <section class="card" aria-labelledby="h-in">
+      <h2 id="h-in">Business details</h2>
+
+      <label for="name">Business name</label>
+      <input id="name" placeholder="e.g. CJ Dental Nabua" autocomplete="off">
+      <div class="row">
+        <button type="button" id="gmaps">Search on Google Maps</button>
+        <a class="btn" href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noopener">Open Place ID Finder</a>
+      </div>
+      <ol class="steps">
+        <li>Type the business name, then open the Place ID Finder.</li>
+        <li>Search the business there and copy the Place ID it shows.</li>
+        <li>Paste it below.</li>
+      </ol>
+
+      <label for="pid">Google Place ID</label>
+      <input id="pid" placeholder="ChIJ..." autocomplete="off" spellcheck="false">
+      <div class="msg" id="pmsg" role="status"></div>
+
+      <div class="row"><button type="button" id="save">Save to list</button></div>
+      <label for="size">QR download size (pixels)</label>
+      <input id="size" type="number" min="200" max="2000" step="50" value="800" style="max-width:140px">
+    </section>
+
+    <section class="card" aria-labelledby="h-out">
+      <h2 id="h-out" style="margin-bottom:10px">Your link & QR code</h2>
+      <div id="empty" class="empty">Enter a Place ID to generate the link and QR code.</div>
+      <div id="result" hidden>
+        <div class="out" id="link"></div>
+        <div class="row">
+          <button type="button" class="primary" id="copy">Copy link</button>
+          <a class="btn" id="open" target="_blank" rel="noopener" href="#">Test link</a>
+        </div>
+        <div style="height:14px"></div>
+        <div class="qrbox"><canvas id="qr" aria-label="QR code for the review link" role="img"></canvas></div>
+        <div class="row">
+          <button type="button" id="dlpng">Download PNG</button>
+          <button type="button" id="dlsvg">Download SVG</button>
+          <button type="button" class="primary" id="present">Presenter</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card wide" aria-labelledby="h-sv">
+      <h2 id="h-sv">Saved businesses</h2>
+      <ul class="saved" id="saved"></ul>
+      <div class="hint">Saved only in this browser on this device.</div>
+    </section>
+  </div>
+</div>
+
+<div id="presenter" role="dialog" aria-modal="true" aria-label="Review QR presenter">
+  <div class="pcard">
+    <div class="stars" aria-hidden="true">★★★★★</div>
+    <h2 id="p-name">Enjoyed your visit?</h2>
+    <p>Scan to leave us a Google review</p>
+    <div class="qrbox"><canvas id="pqr"></canvas></div>
+    <div class="pid" id="p-id"></div>
+  </div>
+  <div class="ptools">
+    <button type="button" id="p-print">Print</button>
+    <button type="button" id="p-full">Full screen</button>
+    <button type="button" class="primary" id="p-close">Close</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+var BASE="https://search.google.com/local/writereview?placeid=";
+var cur=null,SK="rqr-saved",nameEl=$("name");
+
+function lsGet(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function clean(v){return (v||"").trim().replace(/^placeid[:=]/i,"")}
+function valid(v){return /^[A-Za-z0-9_-]{20,}$/.test(v)}
+function matrix(t){var q=qrcode(0,"M");q.addData(t);q.make();var n=q.getModuleCount(),m=[];for(var r=0;r<n;r++){m[r]=[];for(var c=0;c<n;c++)m[r][c]=q.isDark(r,c)}return m}
+function draw(cv,m,px){
+  var n=m.length,qz=4,t=n+qz*2,s=Math.max(1,Math.floor(px/t));
+  cv.width=cv.height=t*s;var x=cv.getContext("2d");
+  x.fillStyle="#fff";x.fillRect(0,0,cv.width,cv.height);x.fillStyle="#000";
+  for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(m[r][c])x.fillRect((c+qz)*s,(r+qz)*s,s,s);
+}
+function svg(m){
+  var n=m.length,q=4,t=n+q*2,d="";
+  for(var r=0;r<n;r++)for(var c=0;c<n;c++)if(m[r][c])d+="M"+(c+q)+" "+(r+q)+"h1v1h-1z";
+  return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+t+' '+t+'" shape-rendering="crispEdges"><rect width="'+t+'" height="'+t+'" fill="#fff"/><path d="'+d+'" fill="#000"/></svg>';
+}
+function download(href,name){var a=document.createElement("a");a.href=href;a.download=name;document.body.appendChild(a);a.click();a.remove()}
+function fname(){return ((((nameEl.value||"review").trim().toLowerCase().replace(/[^a-z0-9]+/g,"-"))||"review"))+"-review-qr"}
+function show(on){$("result").hidden=!on;$("empty").hidden=on;if(!on)cur=null}
+
+function update(){
+  var id=clean($("pid").value),msg=$("pmsg");
+  if(!id){msg.textContent="";msg.className="msg";show(false);return}
+  if(!valid(id)){msg.textContent="That doesn’t look like a Place ID. They are usually 27+ characters and often start with ChIJ.";msg.className="msg err";show(false);return}
+  msg.textContent="Place ID ready.";msg.className="msg ok";
+  var link=BASE+encodeURIComponent(id);
+  try{cur={id:id,link:link,m:matrix(link)}}catch(e){msg.textContent="Could not build the QR code.";msg.className="msg err";show(false);return}
+  $("link").textContent=link;$("open").href=link;draw($("qr"),cur.m,560);show(true);
+}
+$("pid").addEventListener("input",update);
+
+$("gmaps").onclick=function(){
+  var q=nameEl.value.trim();
+  window.open("https://www.google.com/maps/search/"+encodeURIComponent(q||"business"),"_blank","noopener");
+};
+$("copy").onclick=function(){
+  if(!cur)return;var b=$("copy");
+  function done(){b.textContent="Copied";setTimeout(function(){b.textContent="Copy link"},1500)}
+  function fb(){var r=document.createRange();r.selectNodeContents($("link"));var s=getSelection();s.removeAllRanges();s.addRange(r);try{document.execCommand("copy");done()}catch(e){}}
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(cur.link).then(done,fb);else fb();
+};
+$("dlpng").onclick=function(){if(!cur)return;var sz=Math.min(2000,Math.max(200,parseInt($("size").value,10)||800));var c=document.createElement("canvas");draw(c,cur.m,sz);download(c.toDataURL("image/png"),fname()+".png")};
+$("dlsvg").onclick=function(){if(!cur)return;download("data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg(cur.m)),fname()+".svg")};
+
+function openPresenter(){
+  if(!cur)return;
+  $("p-name").textContent=nameEl.value.trim()||"Enjoyed your visit?";
+  $("p-id").textContent="Place ID: "+cur.id;
+  draw($("pqr"),cur.m,680);$("presenter").classList.add("on");
+}
+$("present").onclick=openPresenter;
+$("p-close").onclick=function(){$("presenter").classList.remove("on");if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen()};
+$("p-print").onclick=function(){window.print()};
+$("p-full").onclick=function(){var el=$("presenter");try{if(document.fullscreenElement)document.exitFullscreen();else if(el.requestFullscreen)el.requestFullscreen()}catch(e){}};
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&$("presenter").classList.contains("on"))$("p-close").click()});
+
+var mem=lsGet(SK,[]);
+function render(){
+  var ul=$("saved");ul.innerHTML="";
+  if(!mem.length){var li=document.createElement("li");li.style.color="var(--mute)";li.textContent="Nothing saved yet. Generate a link and choose Save to list.";ul.appendChild(li);return}
+  mem.forEach(function(it,i){
+    var li=document.createElement("li"),left=document.createElement("div");
+    var n=document.createElement("div");n.className="n";n.textContent=it.name||"Untitled business";
+    var d=document.createElement("div");d.className="i";d.textContent=it.id;
+    left.appendChild(n);left.appendChild(d);
+    var act=document.createElement("div");act.className="act";
+    function load(){nameEl.value=it.name||"";$("pid").value=it.id;update()}
+    var a=document.createElement("button");a.textContent="Present";a.onclick=function(){load();openPresenter()};
+    var b=document.createElement("button");b.textContent="Load";b.onclick=function(){load();scrollTo({top:0})};
+    var c=document.createElement("button");c.textContent="Delete";c.onclick=function(){mem.splice(i,1);lsSet(SK,mem);render()};
+    act.appendChild(a);act.appendChild(b);act.appendChild(c);li.appendChild(left);li.appendChild(act);ul.appendChild(li);
+  });
+}
+$("save").onclick=function(){
+  var m=$("pmsg");
+  if(!cur){m.textContent="Enter a valid Place ID first.";m.className="msg err";return}
+  var k=-1;mem.forEach(function(x,i){if(x.id===cur.id)k=i});
+  var rec={name:nameEl.value.trim(),id:cur.id};
+  if(k>=0)mem[k]=rec;else mem.unshift(rec);
+  lsSet(SK,mem);render();m.textContent="Saved to list.";m.className="msg ok";
+};
+render();
+})();
+</script>
+</body>
+</html>
